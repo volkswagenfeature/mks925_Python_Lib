@@ -1,5 +1,6 @@
 # MKS-925 Python Libary
 Author: John Tristan Ritland
+
 Version: v0.1
 
 A library for interacting with the MKS-925 Micropirani vaccum sensor.
