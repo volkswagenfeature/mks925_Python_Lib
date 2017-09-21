@@ -48,7 +48,7 @@ class MKS925:
     class __MKS_msg:
         def __init__(self, msg_types, msg,  
                      response_format = None, 
-                     parameter_format = None,
+                     parameter_format = response_format,
                      docstring = None):
             self.msg_types       = msg_types
             self.msg            = msg
@@ -74,7 +74,7 @@ class MKS925:
                 else:
                     raise Exception("Invailid Parameter Format")
             else:
-                raise Exception("Invalid calltype passed!")
+                raise Exception("Invalid calltype passed")
             self.calltype = ""
     
     class __MKS_wrapper:
@@ -96,12 +96,11 @@ class MKS925:
                                         self.baudrate)
         
         # Library of transmittable messages
-        self.commands = {"Address":"AD",   "Baud":"BR",   "FactoryDefault":"FD",
-                         "RSDelay":"RSD",  "Test":"TST",  "Unit":"U",
-                         "Tag":"UT",       "Type":"DT",   "FirmwareV":"FV",
-                         "HardwareV":"HV", "Origin":"MF", "Model":"MD",
-                         "Pressure":"PR1", "Serial":"SN", "Uptime":"TIM"
+        self.commands = dict()
+        self.commands["baud"] = #TODO: Write out all message declaratons.
 
-                        
-        self.queries
-    
+        # The three externaly accessable wrapper objects, for the "three" different things
+        # you can do with MKS messages: Make Queries, Send commands, or Print docs.
+        self.query      = __MKS_wrapper("TODO: Stuff in here")
+        self.set        = __MKS_wrapper("TODO: Stuff in here")
+        self.info_about = __MKS_wrapper("TODO: Stuff in here")
