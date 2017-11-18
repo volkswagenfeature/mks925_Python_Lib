@@ -19,8 +19,10 @@ class MKS925:
         formvals = [ self.address, message, msg_type, parameter]
         self.serialport.write(commandtemplate.format(formvals)
                                              .encode('ASCII'))
+        
 
-        # Read data from port
+        # Flush data, and Read data from port
+        self.serialport.flush()
         rawin = self.serialport.read(3)
         if (rawin[0] != '@'):
             raise Exception("Invalid Packet Received")
