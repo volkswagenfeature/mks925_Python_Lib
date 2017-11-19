@@ -7,6 +7,8 @@ import re
 # TODO: Better exception handling. At the moment my exceptions are descriptive, but non-standard.
 # TODO: Add more idiot checking for input parameters
 # TODO: Broadcast support?? Multi-sensor support?? Not currently relevant, but might want.
+# TODO: Make sure sensor values are padded appropriately
+# TODO: Make sure everything sends ASCII and not unicode
 
 class MKS925:
     def __send_generic(self, msg_type, message, parameter=""):
@@ -16,7 +18,7 @@ class MKS925:
 
         # Format message to be sent
         commandtemplate = "@{0}{1}{2}{3};FF"
-        formvals = [ self.address, message, msg_type, parameter]
+        formvals = [ self.address., message, msg_type, parameter]
         self.serialport.write(commandtemplate.format(formvals)
                                              .encode('ASCII'))
         
