@@ -11,8 +11,9 @@ class virtualserialport:
         self.interface = serial.Serial(self.slave_descriptor)
 
     def send(self,data):
-        
-        self.interface.write(data.encode("ASCII"))
+        byte_encoded = data.encode("ascii")
+        print(byte_encoded)
+        self.interface.write(byte_encoded)
         self.interface.flush()
 
     def receive(self,chars, timeout):
