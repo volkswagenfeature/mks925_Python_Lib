@@ -22,7 +22,7 @@ import io
 
 # These exceptions are stolen straight from Serial, to assure
 # identical functioning.
-from Serial import SerialException,SerialTimeoutException
+from serial import SerialException,SerialTimeoutException
 
 
 
@@ -37,10 +37,10 @@ from Serial import SerialException,SerialTimeoutException
 
 
 #The buffer system for in and out buffers
-property_Options   = ["port", "baudrate", "bytesize", "stopbits", 
+property_Options   = ["port", "baudrate", "bytesize", "parity",  "stopbits", 
                       "timeout", "xonxoff","rtscts", "write_timeout", 
                       "dsrdtr", "inter_byte_timeout"]
-properties  = collections.namedtuple('property_template', Buffer_Properties)
+properties  = collections.namedtuple('property_template', property_Options)
 
 #Buffers
 buffers = collections.namedtuple('buffers', ['Rx_to_Tx', 'Tx_to_Rx'])
@@ -48,7 +48,7 @@ buffers.Rx_to_Tx = io.BytesIO()
 buffers.Tx_to_Rx = io.BytesIO()
 
 #Flags
-Flags = collections.namedtuple('Flags', ['open','chars_buffered']
+Flags = collections.namedtuple('Flags', ['open','chars_buffered'])
 
 
 ##### Constants ######
@@ -77,7 +77,7 @@ SEVENBITS = b'B7'
 EIGHTBITS = b'B8'
 
 class Serial:
-    def __init__(self, port=None, baudrate=9600, bytesize=EIGHTBITS, 
+    def __init__(self, port=None, baudrate=9600, bytesize=EIGHTBITS, parity=PARITY_NONE,
              stopbits=STOPBITS_ONE, timeout=0, xonxoff=False, 
              rtscts=False, write_timeout=None, dsrdtr=False, 
              inter_byte_timeout=None):
@@ -85,6 +85,7 @@ class Serial:
         properties.port = port
         properties.baudrate = baudrate
         properties.bytesize = bytesize
+        properties.parity   = parity
         properties.stopbits = stopbits
         properties.timeout  = timeout
         properties.xonxoff  = xonxoff
@@ -103,7 +104,7 @@ class Serial:
 
     def read( self, size=1 ):
         data = buffers.Rx_to_Tx.read( size )
-        if (timeout!=0 || timeout!=None || len(data) == size):
+        if (timeout!=0 or timeout!=None or len(data) == size):
             return data
         else:
             # TODO: Handle timeout code here.
