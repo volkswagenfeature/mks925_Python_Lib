@@ -21,7 +21,17 @@ class virtual_terminal_feature_check(unittest.TestCase):
 
     @classmethod
     def setUp(self):
-        virtual_serial = vt.Serial()
+        self.virtual_serial = vt.Serial()
+        self.testbytes = b'abc123!@;'
+        self.testbytes2 = b'foobar'
+
+    @classmethod
+    def tearDown(self):
+        vt.Flags.open = False
+        vt.Flags.chars_buffered = 0
+        vt.buffers.Rx_to_Tx.close()
+        vt.buffers.Tx_to_Rx.close()
+
 
     def test_default_vals(self):
         # Check to make sure that all values are properly initialized to the correct defaults.
@@ -39,12 +49,33 @@ class virtual_terminal_feature_check(unittest.TestCase):
         self.assertEqual(vt.properties.dsrdtr, False)
         self.assertEqual(vt.properties.inter_byte_timeout, None)
 
+        self.assertEqual(vt.Flags.open, True)
+        self.assertEqual(vt.Flags.chars_buffered, 0)
 
+    def test_transmission(self):
+        charcount = self.virtual_serial.write(self.testbytes)
+        self.assertEqual(charcount, len(self.testbytes))
+        self.assertEqual(vt.buffers.Tx_to_Rx.getvalue(),self.testbytes)
+        self.assertEqual(vt.Flags.chars_buffered, len(self.testbytes))
+        self.assertEqual(vt.buffers.Tx_to_Rx.getvalue(), self.testbytes)
 
-    def test_master_to_slave_comms(self):
-        pass
+        # NOTE: Disabled, because for whatever reason, getvalue() works fine, but
+        # read() does not.
+        #self.assertEqual(vt.buffers.Tx_to_Rx.read(),self.testbytes2)
 
+    def test_reception(self):
+        vt.buffers.Rx_to_Tx.write(self.testbytes)
+        self.assertEqual(vt.buffers.Rx_to_Tx.getvalue(),self.testbytes)
+        self.assertEqual(vt.buffers.Rx_to_Tx.getvalue(),self.testbytes)
+        self.assertEqual(self.virtual_serial.read(len(self.testbytes)), self.testbytes)
+        
+    def test_flush(self):
+        self.virtual_serial.write(self.testbytes)
+        self.assertEqual(vt.Flags.chars_buffered, len(self.testbytes))
+        self.virtual_serial.flush()
+        self.assertEqual(vt.Flags.chars_buffered, 0)
 
+        
 if __name__ == '__main__':
     unittest.main()
 

@@ -44,8 +44,6 @@ properties  = collections.namedtuple('property_template', property_Options)
 
 #Buffers
 buffers = collections.namedtuple('buffers', ['Rx_to_Tx', 'Tx_to_Rx'])
-buffers.Rx_to_Tx = io.BytesIO()
-buffers.Tx_to_Rx = io.BytesIO()
 
 #Flags
 Flags = collections.namedtuple('Flags', ['open','chars_buffered'])
@@ -98,13 +96,24 @@ class Serial:
         Flags.open = True
         Flags.chars_buffered = 0
 
+        buffers.Tx_to_Rx = io.BytesIO()
+        buffers.Rx_to_Tx = io.BytesIO()
+
+
+    #NOTE: In serial.Serial, this method "should" only accept BYTES. At the moment,
+    # my implementation accepts STRINGS and BYTES. I'm not sure how to differentiate.
+    # Things tried:
+    # type(data) == type(bytes())
+    # isinstanceof(data, bytes)
     def write( self, data ):
         buffers.Tx_to_Rx.write( data )
-        chars_buffered += len(data)
+        Flags.chars_buffered += len(data)
+        return len(data)
 
     def read( self, size=1 ):
-        data = buffers.Rx_to_Tx.read( size )
-        if (timeout!=0 or timeout!=None or len(data) == size):
+        # This is here because read() doesn't work atm.
+        data = buffers.Rx_to_Tx.getvalue()[0:size]
+        if (properties.timeout!=0 or properties.timeout!=None or len(data) == size):
             return data
         else:
             # TODO: Handle timeout code here.
@@ -119,4 +128,4 @@ class Serial:
             raise NotImplementedError("Timeouts are not properly implenented yet!")
 
     def flush( self ):
-        chars_buffered = 0
+        Flags.chars_buffered = 0
