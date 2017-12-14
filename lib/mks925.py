@@ -1,5 +1,6 @@
 # To interface with the serial port
-import serial
+#import serial
+import lib.virtual_terminal2 as serial
 
 # To format-check everything
 import re
@@ -9,42 +10,41 @@ import re
 # TODO: Broadcast support?? Multi-sensor support?? Not currently relevant, but might want.
 # TODO: Make sure sensor values are padded appropriately
 # TODO: Make sure everything sends ASCII and not unicode
+class NACKError(ConnectionError):
+    def __init__(self,value):
+        self.parameter = value
+    def __str__(self):
+        return repr(self.parameter)
 
 class MKS925:
     def __send_generic(self, msg_type, message, parameter=""):
-        # Idiot checking for input parameters
-        if (msg_type.find("!?") == -1 or msg_type.len() != 1):
-            raise Exception("Invalid Message Type")
 
         # Format message to be sent
         commandtemplate = "@{0}{1}{2}{3};FF"
-        formvals = [ self.address, message, msg_type, parameter]
-        self.serialport.write(commandtemplate.format(formvals)
+        formvals = ( self.address, message, msg_type, parameter)
+        self.serialport.write(commandtemplate.format(*formvals)
                                              .encode('ASCII'))
         
 
         # Flush data, and Read data from port
         self.serialport.flush()
-        rawin = self.serialport.read(3)
-        if (rawin[0] != '@'):
-            raise Exception("Invalid Packet Received")
+        rawin = self.serialport.read()
+        if ((len(rawin) == 0) or (rawin[0] != '@')):
+            raise ConnectionError("Invalid Reply")
         while (rawin[-3:-1] != ";FF"):
             rawin += self.serialport.read(1)
 
         # Process raw data
-        if rawin.len() :
-            if rawin.find("ACK"):
-                res = rawin[1:-3].split("ACK")
-                resaddress = res[0]
-                resvalue = res[1]
-                return resvalue
-            elif rawin.find("NAK"):
-                raise exception("NAK received")
-                return rawin[1:-3].split("NAK")[1]
-            else:
-                raise Exception( "Unexpected response")
+        if rawin.find("ACK"):
+            res = rawin[1:-3].split("ACK")
+            resaddress = res[0]
+            resvalue = res[1]
+            return resvalue
+        elif rawin.find("NAK"):
+            raise NACKError("NAK received")
+            return rawin[1:-3].split("NAK")[1]
         else:
-            raise Exception( "Malformed Reply")
+            raise ConnectionError( "Invalid Reply")
         # Return raw data for debugging. 
         return rawin
 

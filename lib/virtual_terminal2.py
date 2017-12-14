@@ -74,6 +74,18 @@ SIXBITS   = b'B6'
 SEVENBITS = b'B7'
 EIGHTBITS = b'B8'
 
+class Serial_responder:
+    def transmit():
+        pass
+    def receive():
+        pass
+    def reset():
+        pass
+    def Rx_history(int index):
+        pass
+    def Rx_history_len():
+        pass
+
 class Serial:
     def __init__(self, port=None, baudrate=9600, bytesize=EIGHTBITS, parity=PARITY_NONE,
              stopbits=STOPBITS_ONE, timeout=0, xonxoff=False, 
@@ -106,13 +118,15 @@ class Serial:
     # type(data) == type(bytes())
     # isinstanceof(data, bytes)
     def write( self, data ):
+        buffers.Tx_to_Rx.seek(0,io.SEEK_END)
         buffers.Tx_to_Rx.write( data )
+        buffers.Tx_to_Rx.seek((-1*len(data)),io.SEEK_CUR)
         Flags.chars_buffered += len(data)
         return len(data)
 
     def read( self, size=1 ):
-        # This is here because read() doesn't work atm.
-        data = buffers.Rx_to_Tx.getvalue()[0:size]
+        data = buffers.Rx_to_Tx.read(size)
+        
         if (properties.timeout!=0 or properties.timeout!=None or len(data) == size):
             return data
         else:

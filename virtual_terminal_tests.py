@@ -75,6 +75,51 @@ class virtual_terminal_feature_check(unittest.TestCase):
         self.virtual_serial.flush()
         self.assertEqual(vt.Flags.chars_buffered, 0)
 
+
+class Virtual_terminal_responder(unittest.TestCase):
+    def setUp(self):
+        self.virtual_serial = vt.Serial()
+        self.responder = vt.Serial_responder()
+
+    def tearDown(self):
+        self.responder.reset()
+
+    def test_receive_history_length(self):
+        """History_length() should print off how long history currently is"""
+        vt.Serial.write("stuff and things!!!!")
+        vt.Serial.write("pqlst")
+        vt.Serial.write("potato")
+
+        self.assertEqual(self.responder.get_receive_history_length, 3)
+        vt.Serial.write("more stuff")
+        self.assertEqual(self.responder.get_receive_history_length, 4)
+
+        
+    def test_receive_history(self):
+        """ History should print the n-th from-the-end transmission. It returns a index error if it
+        doesn't exist. """
+        pass
+
+
+    def test_reset(self):
+        """A test needed for the tearDown method, resets the entire class to default everything"""
+        pass
+
+    def test_receive(self):
+        """a test to confirm behavior of receive: 
+        Behavior is defined as returning the bytes written to Serial after the position
+        that the last receive() finished, and before the position that the last flush() extends to"""
+        pass
+
+
+    def test_transmit(self):
+        """a test to confirm behavior of transmit:
+        Behavior is defined as setting the value that the next read will receive
+        """
+        pass
+    
+        
+
         
 if __name__ == '__main__':
     unittest.main()
