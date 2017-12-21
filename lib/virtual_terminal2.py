@@ -18,7 +18,8 @@ import time
 import collections
 
 # BytesIO is used from buffers for the read/write buffers
-import io
+# Buffers have recently been removed.
+#import io
 
 # These exceptions are stolen straight from Serial, to assure
 # identical functioning.
@@ -44,6 +45,8 @@ properties  = collections.namedtuple('property_template', property_Options)
 
 #Buffers
 buffers = collections.namedtuple('buffers', ['Rx_to_Tx', 'Tx_to_Rx'])
+buffers.Rx_to_Tx = list()
+buffers.Tx_to_Rx = list()
 
 #Flags
 Flags = collections.namedtuple('Flags', ['open','chars_buffered'])
@@ -75,16 +78,16 @@ SEVENBITS = b'B7'
 EIGHTBITS = b'B8'
 
 class Serial_responder:
-    def transmit():
+    def transmit(self):
         pass
-    def receive():
+    def receive(self):
         pass
-    def reset():
+    def reset(self):
         pass
-    def Rx_history(int index):
+    def Rx_history(self,index):
         pass
-    def Rx_history_len():
-        pass
+    def Rx_history_len(self):
+        return len(buffers.Tx_to_Rx)
 
 class Serial:
     def __init__(self, port=None, baudrate=9600, bytesize=EIGHTBITS, parity=PARITY_NONE,
@@ -108,8 +111,8 @@ class Serial:
         Flags.open = True
         Flags.chars_buffered = 0
 
-        buffers.Tx_to_Rx = io.BytesIO()
-        buffers.Rx_to_Tx = io.BytesIO()
+        buffers.Tx_to_Rx = list()
+        buffers.Rx_to_Tx = list()
 
 
     #NOTE: In serial.Serial, this method "should" only accept BYTES. At the moment,
@@ -117,10 +120,10 @@ class Serial:
     # Things tried:
     # type(data) == type(bytes())
     # isinstanceof(data, bytes)
+    # DONE: Rewritten for terminal responder use.
     def write( self, data ):
-        buffers.Tx_to_Rx.seek(0,io.SEEK_END)
-        buffers.Tx_to_Rx.write( data )
-        buffers.Tx_to_Rx.seek((-1*len(data)),io.SEEK_CUR)
+
+        buffers.Tx_to_Rx.append(data)
         Flags.chars_buffered += len(data)
         return len(data)
 
